@@ -87,7 +87,7 @@ async def change_handler(router: Router, bot, admin_messages, PaymentState, Chan
         request_key = f"{user_id}_{amount}_{callback.message.message_id - 1}"
         repos = await get_repositories()
         if action == "approve":
-            repos.user_table.update_price_by_tg_id(user_id, amount)
+            await repos.user_repo.update_price_by_tg_id(user_id, amount)
 
             try:
                 await bot.send_message(
@@ -113,8 +113,6 @@ async def change_handler(router: Router, bot, admin_messages, PaymentState, Chan
             await callback.message.edit_text(
                 f"{callback.message.text}\n\n Запрос отклонен администратором"
             )
-
-        await callback.message.edit_reply_markup(reply_markup=None)
 
         if request_key in admin_messages:
             del admin_messages[request_key]

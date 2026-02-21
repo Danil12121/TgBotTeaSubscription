@@ -3,6 +3,7 @@ import logging
 import os
 
 from aiogram.filters import Command
+from aiogram.types import BotCommand
 from aiogram.types import Message
 from aiogram import Bot, Dispatcher, Router
 from aiogram.fsm.state import StatesGroup, State
@@ -12,6 +13,7 @@ from dotenv import load_dotenv
 from handlers.start_handler import start_handler
 from handlers.admin_decision_handler import admin_handler
 from handlers.transaction_handler import transaction_handler
+from handlers.change_handler import change_handler
 
 from notifications.monthly_notification import monthly_notification
 from notifications.weekly_notification import weekly_notification
@@ -53,7 +55,7 @@ async def main():
     scheduler = AsyncIOScheduler()
     scheduler.add_job(monthly_notification, 'cron',
                       args=[logging, users, dp, bot, PaymentState],
-                      day=21, hour=16, minute=45)
+                      day=1, hour=12)
 
     scheduler.add_job(weekly_notification, 'interval',
                       args=[logging, users, dp, bot, PaymentState],
@@ -64,12 +66,16 @@ async def main():
     await start_handler(router, bot, users, get_repositories, PaymentState, dp)
     await admin_handler(router, bot, admin_messages, AdminConfirmCallback, ADMIN_ID, get_repositories)
     await transaction_handler(router, bot, admin_messages, AdminConfirmCallback, ADMIN_ID, PaymentState)
-
+    await change_handler(router, bot, admin_messages, PaymentState, ChangeConfirmCallback, ADMIN_ID, get_repositories)
     dp.include_router(router)
 
 
     await bot.delete_webhook(drop_pending_updates=True)
 
+    await bot.set_my_commands([
+        BotCommand(command="start", description="Начать"),
+        BotCommand(command="change", description="Изменить взнос")
+    ])
     await dp.start_polling(bot)
 
 if __name__ == "__main__":
