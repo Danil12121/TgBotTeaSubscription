@@ -57,3 +57,45 @@ class UserRepository(IUserRepository):
         except SQLAlchemyError:
             await self.session.rollback()
             raise
+    async def update_price_by_tg_id(self, tg_id: int, price: int):
+        """
+        Обновляет price пользователя по tg_id
+        """
+        query = text("""
+            UPDATE bot_schema.user_table
+            SET price = :price
+            WHERE tg_id = :tg_id
+        """)
+        try:
+            await self.session.execute(query, {
+                "tg_id": tg_id,
+                "price": price
+            })
+            await self.session.commit()
+        except SQLAlchemyError:
+            await self.session.rollback()
+            raise
+
+    
+    async def get_by_tg_id(self, tg_id: int) -> int | None:
+        """
+        Возвращает price пользователя по tg_id
+        """
+        query = text("""
+            SELECT price
+            FROM bot_schema.user_table
+            WHERE tg_id = :tg_id
+        """)
+
+        try:
+            result = await self.session.execute(query, {
+                "tg_id": tg_id
+            })
+            row = result.fetchone()
+
+            if row:
+                return row.price
+            return None
+
+        except SQLAlchemyError:
+            raise
