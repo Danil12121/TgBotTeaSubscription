@@ -2,13 +2,12 @@
 from aiogram.filters import Command
 from aiogram.types import Message
 from aiogram import Router
-from src.service_locator import get_repositories
 
 router = Router()
 
 # users — словарь с данными пользователей, передается из main
 # PaymentState — класс состояния FSM, передается из main
-def start_handler(users: dict, PaymentState):
+async def start_handler(router: Router, bot, users, get_repositories, PaymentState, dp):
     @router.message(Command("start"))
     async def cmd_start(message: Message):
         await message.answer(f"Привет, {message.from_user.first_name}!")
@@ -16,13 +15,16 @@ def start_handler(users: dict, PaymentState):
         repos = await get_repositories() 
         await repos.user_repo.add(user_id)
 
+        state = dp.fsm.resolve_context(bot=bot, chat_id=user_id, user_id=user_id)
+        await state.set_state(PaymentState.waiting_for_transaction)
+
         users[user_id] = {
             "username": message.from_user.username or str(user_id),
             "status": "unpaid"
         }
         print(users)
         await message.answer(
-            "Добро пожаловать! Я буду присылать вам напоминания об оплате."
+            "Добро пожаловать! Оплатите взнос за этот месяц."
         )
 
     return router

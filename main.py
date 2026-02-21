@@ -10,19 +10,23 @@ from aiogram.filters.callback_data import CallbackData
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
 from dotenv import load_dotenv
 from handlers.start_handler import start_handler
+from handlers.admin_decision_handler import admin_handler
+from handlers.transaction_handler import transaction_handler
 
 from notifications.monthly_notification import monthly_notification
 from notifications.weekly_notification import weekly_notification
 from src.service_locator import get_repositories
 
+
+
 load_dotenv()
 BOT_TOKEN = os.getenv("BOT_TOKEN")
 print(BOT_TOKEN)
-ADMIN_ID = [123456789, 987654321]
+ADMIN_ID = [770484979]
 
 bot = Bot(token=BOT_TOKEN)
 dp = Dispatcher()
-# router = Router()
+router = Router()
 
 
 users = {} #{user_id: {"username": str, "status": "unpaid" | "pending" | "paid"}}
@@ -51,8 +55,13 @@ async def main():
                        days=7)
 
     scheduler.start()
-    start_router = start_handler(users, PaymentState)
-    dp.include_router(start_router)
+
+    await start_handler(router, bot, users, get_repositories, PaymentState, dp)
+    await admin_handler(router, bot, admin_messages, AdminConfirmCallback, ADMIN_ID, get_repositories)
+    await transaction_handler(router, bot, admin_messages, AdminConfirmCallback, ADMIN_ID, PaymentState)
+
+    dp.include_router(router)
+
 
     await bot.delete_webhook(drop_pending_updates=True)
 

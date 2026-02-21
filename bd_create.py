@@ -52,7 +52,8 @@ async def setup_database():
             CREATE TABLE {SCHEMA_NAME}.user_table(
                 id SERIAL PRIMARY KEY,
                 tg_id BIGINT UNIQUE,
-                last_notification_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+                last_notification_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                price INTEGER DEFAULT 300
             )
         """)
         print("user_table создана")
@@ -73,10 +74,11 @@ async def setup_database():
         await conn.execute(f"""
             CREATE TABLE {SCHEMA_NAME}.transaction_table(
                 id SERIAL PRIMARY KEY,
-                user_id INTEGER REFERENCES {SCHEMA_NAME}.user_table(id),
+                user_id INTEGER REFERENCES {SCHEMA_NAME}.user_table(tg_id),
                 number VARCHAR(255) NOT NULL,
                 date_of_approve TIMESTAMP,
-                admin_id INTEGER REFERENCES {SCHEMA_NAME}.user_table(id)
+                admin_id INTEGER,
+                price INTEGER
             )
         """)
         print("transaction_table создана")
