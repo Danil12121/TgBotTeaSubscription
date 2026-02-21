@@ -77,7 +77,7 @@ class UserRepository(IUserRepository):
             raise
 
     
-    async def get_by_tg_id(self, tg_id: int) -> int | None:
+    async def get_by_tg_id(self, tg_id: int) -> int:
         """
         Возвращает price пользователя по tg_id
         """
@@ -95,7 +95,7 @@ class UserRepository(IUserRepository):
 
             if row:
                 return row.price
-            return None
+            return 0
 
         except SQLAlchemyError:
             raise

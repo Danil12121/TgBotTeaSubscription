@@ -5,7 +5,7 @@ from aiogram.types import Message, CallbackQuery
 from aiogram import Router
 from typing import Dict, List
 
-async def change_handler(router: Router, bot, admin_messages, PaymentState, ChangeConfirmCallback, ADMIN_ID: List[int]):
+async def change_handler(router: Router, bot, admin_messages, PaymentState, ChangeConfirmCallback, ADMIN_ID: List[int], get_repositories):
     @router.message(Command("change"))
     async def change_command(message: Message, state: FSMContext):
         args = message.text.split()
@@ -85,9 +85,9 @@ async def change_handler(router: Router, bot, admin_messages, PaymentState, Chan
         amount = callback_data.amount
 
         request_key = f"{user_id}_{amount}_{callback.message.message_id - 1}"
-
+        repos = await get_repositories()
         if action == "approve":
-            change_price()
+            repos.user_table.update_price_by_tg_id(user_id, amount)
 
             try:
                 await bot.send_message(
