@@ -4,6 +4,7 @@ from aiogram.fsm.context import FSMContext
 from aiogram.types import Message, CallbackQuery
 from aiogram import Router
 from typing import Dict, List
+from src.repository.user_repo import UserRepository
 
 async def change_handler(router: Router, bot, admin_messages, PaymentState, ChangeConfirmCallback, ADMIN_ID: List[int], get_repositories):
     @router.message(Command("change"))
@@ -85,35 +86,39 @@ async def change_handler(router: Router, bot, admin_messages, PaymentState, Chan
         amount = callback_data.amount
 
         request_key = f"{user_id}_{amount}_{callback.message.message_id - 1}"
-        repos = await get_repositories()
-        if action == "approve":
-            await repos.user_repo.update_price_by_tg_id(user_id, amount)
+        async_session_maker = await get_repositories()
+        async with async_session_maker() as session:
+            user_repo = UserRepository(session)
 
-            try:
-                await bot.send_message(
-                    chat_id=user_id,
-                    text=f"Ваш запрос на изменение цены до {amount} рублей был одобрен!"
+            if action == "approve":
+                await user_repo.update_price_by_tg_id(user_id, amount)
+
+                try:
+                    await bot.send_message(
+                        chat_id=user_id,
+                        text=f"Ваш запрос на изменение цены до {amount} рублей был одобрен!"
+                    )
+                except Exception as e:
+                    print(f"Ошибка уведомления пользователя {user_id}: {e}")
+
+                await callback.message.edit_text(
+                    f"{callback.message.text}\n\nЗапрос подтвержден администратором"
                 )
-            except Exception as e:
-                print(f"Ошибка уведомления пользователя {user_id}: {e}")
 
-            await callback.message.edit_text(
-                f"{callback.message.text}\n\nЗапрос подтвержден администратором"
-            )
+            elif action == "reject":
+                try:
+                    await bot.send_message(
+                        chat_id=user_id,
+                        text=f"Ваш запрос на изменение цены до {amount} рублей был отклонен."
+                    )
+                except Exception as e:
+                    print(f"Ошибка уведомления пользователя {user_id}: {e}")
 
-        elif action == "reject":
-            try:
-                await bot.send_message(
-                    chat_id=user_id,
-                    text=f"Ваш запрос на изменение цены до {amount} рублей был отклонен."
+                await callback.message.edit_text(
+                    f"{callback.message.text}\n\nЗапрос отклонен администратором"
                 )
-            except Exception as e:
-                print(f"Ошибка уведомления пользователя {user_id}: {e}")
 
-            await callback.message.edit_text(
-                f"{callback.message.text}\n\n Запрос отклонен администратором"
-            )
-
+        # удаляем запись о сообщении админа
         if request_key in admin_messages:
             del admin_messages[request_key]
 

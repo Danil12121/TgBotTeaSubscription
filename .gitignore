@@ -1,1 +1,6 @@
 .env
+*/.__pycache__
+*/.__pycache__
+config.cfg
+bd_create.py
+*/__init__.py

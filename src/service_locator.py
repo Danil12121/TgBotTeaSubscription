@@ -57,13 +57,18 @@ async def get_sessionmaker(max_retries: int = 5, delay: int = 2) -> Any:
 
 async def get_repositories():
     global _async_session_maker
-
     if _async_session_maker is None:
         _async_session_maker = await get_sessionmaker()
-    async with _async_session_maker() as session:
-        user_repo: IUserRepository = UserRepository(session)
-        transaction_repo: ITransactionRepository = TransactionRepository(session)
+    # вернём фабрику сессий, а не конкретную сессию
+    return _async_session_maker
+    # global _async_session_maker
 
-        repositories = Repositories(transaction_repo, user_repo)
+    # if _async_session_maker is None:
+    #     _async_session_maker = await get_sessionmaker()
+    # async with _async_session_maker() as session:
+    #     user_repo: IUserRepository = UserRepository(session)
+    #     transaction_repo: ITransactionRepository = TransactionRepository(session)
 
-    return repositories
+    #     repositories = Repositories(transaction_repo, user_repo)
+
+    # return repositories

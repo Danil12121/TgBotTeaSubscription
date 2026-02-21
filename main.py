@@ -39,6 +39,7 @@ class AdminConfirmCallback(CallbackData, prefix="admin_tx"):
     action: str
     user_id: int
     tx_number: str
+    price: int
 
 class ChangeConfirmCallback(CallbackData, prefix="change"):
     action: str  # "approve" или "reject"
@@ -65,7 +66,7 @@ async def main():
 
     await start_handler(router, bot, users, get_repositories, PaymentState, dp)
     await admin_handler(router, bot, admin_messages, AdminConfirmCallback, ADMIN_ID, get_repositories)
-    await transaction_handler(router, bot, admin_messages, AdminConfirmCallback, ADMIN_ID, PaymentState)
+    await transaction_handler(router, bot, admin_messages, AdminConfirmCallback, ADMIN_ID, PaymentState, get_repositories)
     await change_handler(router, bot, admin_messages, PaymentState, ChangeConfirmCallback, ADMIN_ID, get_repositories)
     dp.include_router(router)
 
