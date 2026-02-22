@@ -34,7 +34,7 @@ async def admin_handler(router: Router, bot, admin_messages, AdminConfirmCallbac
                         try:
                             await bot.delete_message(chat_id=msg_data["admin_id"], message_id=msg_data["message_id"])
                         except Exception as e:
-                            logging.error(f"Не удалось удалить сообщение у админа {msg_data['admin_id']}: {e}")
+                            print(f"Не удалось удалить сообщение у админа {msg_data['admin_id']}: {e}")
                 del admin_messages[number]
 
             await callback.answer()

@@ -3,7 +3,7 @@ from aiogram.utils.keyboard import InlineKeyboardBuilder
 from aiogram.fsm.context import FSMContext
 from aiogram.types import Message, CallbackQuery
 from aiogram import Router
-from typing import Dict, List
+from typing import  List
 from src.repository.user_repo import UserRepository
 
 async def change_handler(router: Router, bot, admin_messages, PaymentState, ChangeConfirmCallback, ADMIN_ID: List[int], get_repositories):

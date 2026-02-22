@@ -12,7 +12,7 @@ async def weekly_notification(logging, users, dp, bot, PaymentState):
                 try:
                     state = dp.fsm.resolve_context(bot=bot, chat_id=user_id, user_id=user_id)
                     await state.set_state(PaymentState.waiting_for_transaction)
-                    price = await user_table.get_by_tg_id(user_id)
+                    price = await user_repo.get_by_tg_id(user_id)
                     await bot.send_message(user_id,
                                     f" Напоминаем: у вас есть неоплаченный счет в {price} рублей. Пожалуйста, отправьте номер транзакции.")
                     await user_repo.update_last_notification(user_id, last_notification_date=datetime.utcnow())
